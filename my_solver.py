@@ -60,7 +60,8 @@ def appear_as_subpart(some_part, goal_part):
         True if 'some_part' appears in 'goal_part'
         False otherwise    
     '''
-        
+    # Step 1: Find the location of the first element of some_part in goal_part. This is stored in idx (numpy array)
+    # Step 2: Try to match some_part in goal_part.
     part = np.array(some_part)  # HINT
     goal = np.array(goal_part)
     idx = np.where(goal == part[0][0])
@@ -97,8 +98,26 @@ def cost_rotated_subpart(some_part, goal_part):
         np.inf  if no rotated version of 'some_part' appear in 'goal_part'
     
     '''
+    # Create a TetrisPart to rotate some_part
+    some_part_tetris = TetrisPart(some_part)
+    # Check the four possible rotations
+    possible_rotations = 4
+    for rot in range(0, possible_rotations):
+        if rot == 0:
+            some_part_tetris.get_frozen()
+            if appear_as_subpart(some_part_tetris.frozen, goal_part):
+                return rot
+        else:
+            # Rotate some_part_tetris as many times as needed
+            some_part_tetris.rotate90()
+            some_part_tetris.get_frozen()
+            if appear_as_subpart(some_part_tetris.frozen, goal_part):
+                return rot
+    return np.inf
+
+
     
-    raise NotImplementedError
+
     
     
 # ---------------------------------------------------------------------------
