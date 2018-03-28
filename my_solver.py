@@ -222,7 +222,11 @@ class AssemblyProblem_2(AssemblyProblem_1):
         """
         #
 
-        raise NotImplementedError
+        valid_moves = [(a, b, c) for a, b in itertools.permutations(state, 2) for c in
+                       range((offset_range(a, b)[0]), (offset_range(a, b)[1]))
+                       if c is not None and
+                       appear_as_subpart(TetrisPart(part_under=b,part_above=a,offset=c).get_frozen(),self.goal[0])]
+        return valid_moves
 
 
 # ---------------------------------------------------------------------------
@@ -386,7 +390,12 @@ def solve_2(initial, goal):
     '''
 
     print('\n++  busy searching in solve_2() ...  ++\n')
-    raise NotImplementedError
+    assembly_problem = AssemblyProblem_2(initial, goal)  # HINT
+    sol_ts = generic_search.breadth_first_tree_search(assembly_problem)
+    if sol_ts is None:
+        return ('no solution')
+    else:
+        return sol_ts.solution()
 
 
 # ---------------------------------------------------------------------------
