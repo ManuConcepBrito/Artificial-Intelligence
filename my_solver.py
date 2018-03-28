@@ -16,11 +16,12 @@ import itertools
 
 import generic_search
 
-from assignment_one import (TetrisPart, AssemblyProblem, offset_range, 
-#                            display_state, 
-                            make_state_canonical, play_solution, 
-#                            load_state, make_random_state
+from assignment_one import (TetrisPart, AssemblyProblem, offset_range,
+    #                            display_state,
+                            make_state_canonical, play_solution,
+    #                            load_state, make_random_state
                             )
+
 
 # ---------------------------------------------------------------------------
 
@@ -29,15 +30,16 @@ def print_the_team():
     Print details of the members of your team 
     (full name + student number)
     '''
-    
+
     raise NotImplementedError
+
 
 #    print('Ada Lovelace, 12340001')
 #    print('Grace Hopper, 12340002')
 #    print('Maryam Mirzakhani, 12340003')
-    
+
 # ---------------------------------------------------------------------------
-        
+
 def appear_as_subpart(some_part, goal_part):
     '''    
     Determine whether the part 'some_part' appears in another part 'goal_part'.
@@ -61,25 +63,22 @@ def appear_as_subpart(some_part, goal_part):
         False otherwise    
     '''
     # Step 1: Find the location of the first element of some_part in goal_part. This is stored in idx (numpy array)
-    # Step 2: Try to match some_part in goal_part.
+    # Step 2: Try to match some_part in goal_part (only looking at the nonzero elements of some_part).
     part = np.array(some_part)  # HINT
     goal = np.array(goal_part)
     idx = np.where(goal == part[0][0])
     for i in range(0, idx[0].size):
         try:
             goal_subarray = goal[idx[0][i]:part.shape[0] + idx[0][i], idx[1][i]:part.shape[1] + idx[1][i]]
-            if np.array_equal(part, goal_subarray):
+            if np.array_equal(part[part.nonzero()], goal_subarray[part.nonzero()]):
                 return True
         except IndexError:
             pass
     return False
 
 
-
-
-
 # ---------------------------------------------------------------------------
-        
+
 def cost_rotated_subpart(some_part, goal_part):
     '''    
     Determine whether the part 'some_part' appears in another part 'goal_part'
@@ -108,7 +107,6 @@ def cost_rotated_subpart(some_part, goal_part):
             if appear_as_subpart(some_part_tetris.frozen, goal_part):
                 return rot
         else:
-            # Rotate some_part_tetris as many times as needed
             some_part_tetris.rotate90()
             some_part_tetris.get_frozen()
             if appear_as_subpart(some_part_tetris.frozen, goal_part):
@@ -116,10 +114,6 @@ def cost_rotated_subpart(some_part, goal_part):
     return np.inf
 
 
-    
-
-    
-    
 # ---------------------------------------------------------------------------
 
 class AssemblyProblem_1(AssemblyProblem):
@@ -144,7 +138,7 @@ class AssemblyProblem_1(AssemblyProblem):
         # Here the parent class is 'AssemblyProblem' 
         # which itself is derived from 'generic_search.Problem'
         super(AssemblyProblem_1, self).__init__(initial, goal, use_rotation=False)
-    
+
     def actions(self, state):
         """
         Return the actions that can be executed in the given
@@ -160,13 +154,10 @@ class AssemblyProblem_1(AssemblyProblem):
             state passed as argument.
         
         """
-        #
-
-        raise NotImplementedError
-
-        # part_list = list(state)  #    HINT
-        
-
+        valid_moves = [(a, b, c) for a, b in itertools.permutations(state, 2) for c in
+                           range(offset_range(a, b)[0], offset_range(a, b)[1])
+                            if c is not None]
+        return valid_moves
 
     def result(self, state, action):
         """
@@ -177,13 +168,16 @@ class AssemblyProblem_1(AssemblyProblem):
         
         @return
           a state in canonical order
-        
         """
-        # Here a workbench state is a frozenset of parts        
- 
-        raise NotImplementedError
-
-        # pa, pu, offset = action # HINT
+        assert action in self.actions(state)
+        pa, pu, offset = action
+        # Rename variables with meaningful names
+        tetris = TetrisPart(part_above=pa, part_under=pu, offset=offset)
+        new_part = tetris.get_frozen()
+        tetris.frozen = None
+        updated_state = [a for a in state if a not in [pa, pu]]
+        updated_state.append(new_part)
+        return make_state_canonical(tuple(updated_state))
 
 
 # ---------------------------------------------------------------------------
@@ -215,7 +209,7 @@ class AssemblyProblem_2(AssemblyProblem_1):
         # Here the parent class is 'AssemblyProblem' 
         # which itself is derived from 'generic_search.Problem'
         super(AssemblyProblem_2, self).__init__(initial, goal)
-    
+
     def actions(self, state):
         """
         Return the actions that can be executed in the given
@@ -258,7 +252,6 @@ class AssemblyProblem_3(AssemblyProblem_1):
         super(AssemblyProblem_3, self).__init__(initial, goal)
         self.use_rotation = True
 
-    
     def actions(self, state):
         """Return the actions that can be executed in the given
         state. The result would typically be a list, but if there are
@@ -273,7 +266,6 @@ class AssemblyProblem_3(AssemblyProblem_1):
 
         raise NotImplementedError
 
-        
     def result(self, state, action):
         """
         Return the state that results from executing the given
@@ -283,7 +275,7 @@ class AssemblyProblem_3(AssemblyProblem_1):
         The action can be a drop or rotation.        
         """
         # Here a workbench state is a frozenset of parts        
- 
+
         raise NotImplementedError
 
 
@@ -327,9 +319,7 @@ class AssemblyProblem_4(AssemblyProblem_3):
         """
 
         raise NotImplementedError
-        
-        
-        
+
     def h(self, n):
         '''
         This heuristic computes the following cost; 
@@ -350,8 +340,9 @@ class AssemblyProblem_4(AssemblyProblem_3):
 
         raise NotImplementedError
 
+
 # ---------------------------------------------------------------------------
-        
+
 def solve_1(initial, goal):
     '''
     Solve a problem of type AssemblyProblem_1
@@ -368,13 +359,17 @@ def solve_1(initial, goal):
     '''
 
     print('\n++  busy searching in solve_1() ...  ++\n')
-    raise NotImplementedError
-    
-    # assembly_problem = AssemblyProblem_1(initial, goal) # HINT
-    
+
+    assembly_problem = AssemblyProblem_1(initial, goal)  # HINT
+    sol_ts = generic_search.breadth_first_tree_search(assembly_problem)
+    if sol_ts is None:
+        return ('no solution')
+    else:
+        return play_solution(assembly_problem, sol_ts)
+
 
 # ---------------------------------------------------------------------------
-        
+
 def solve_2(initial, goal):
     '''
     Solve a problem of type AssemblyProblem_2
@@ -392,10 +387,10 @@ def solve_2(initial, goal):
 
     print('\n++  busy searching in solve_2() ...  ++\n')
     raise NotImplementedError
-    
+
 
 # ---------------------------------------------------------------------------
-        
+
 def solve_3(initial, goal):
     '''
     Solve a problem of type AssemblyProblem_3
@@ -413,9 +408,10 @@ def solve_3(initial, goal):
 
     print('\n++  busy searching in solve_3() ...  ++\n')
     raise NotImplementedError
-    
+
+
 # ---------------------------------------------------------------------------
-        
+
 def solve_4(initial, goal):
     '''
     Solve a problem of type AssemblyProblem_4
@@ -434,11 +430,11 @@ def solve_4(initial, goal):
     #         raise NotImplementedError
     print('\n++  busy searching in solve_4() ...  ++\n')
     raise NotImplementedError
-        
+
+
 # ---------------------------------------------------------------------------
 
 
-    
+
 if __name__ == '__main__':
     pass
-    
