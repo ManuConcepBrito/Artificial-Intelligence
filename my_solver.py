@@ -158,7 +158,6 @@ class AssemblyProblem_1(AssemblyProblem):
                            range(offset_range(a, b)[0], offset_range(a, b)[1])
                             if c is not None])
         return valid_moves
-
     def result(self, state, action):
         """
         Return the state (as a tuple of parts in canonical order)
@@ -220,9 +219,7 @@ class AssemblyProblem_2(AssemblyProblem_1):
         A candidate action is eliminated if and only if the new part 
         it creates does not appear in the goal state.
         """
-        #
 
-        raise NotImplementedError
 
 
 # ---------------------------------------------------------------------------
@@ -262,9 +259,20 @@ class AssemblyProblem_3(AssemblyProblem_1):
         lead to doomed states.
         
         """
-        #
+        # Only 90 degrees rotation allowed?
+        valid_moves = []
+        possible_rotations = 1
+        for a, b in itertools.permutations(state, 2):
+            tetris_part = TetrisPart(a)
+            for i in range(0, possible_rotations):
+                tetris_part.rotate90()
+                rotated_part = tetris_part.get_frozen()
+                for c in range(offset_range(rotated_part, b)[0], offset_range(rotated_part, b)[1]):
+                    valid_moves.append((rotated_part, b, c))
 
-        raise NotImplementedError
+        # Is this logic? Any other way of creating an iterator
+        valid_moves = iter(valid_moves)
+        return valid_moves
 
     def result(self, state, action):
         """
@@ -275,8 +283,7 @@ class AssemblyProblem_3(AssemblyProblem_1):
         The action can be a drop or rotation.        
         """
         # Here a workbench state is a frozenset of parts        
-
-        raise NotImplementedError
+        return AssemblyProblem_1.result(self, state, action)
 
 
 # ---------------------------------------------------------------------------
@@ -405,9 +412,14 @@ def solve_3(initial, goal):
         'initial' to state 'goal'
     
     '''
-
     print('\n++  busy searching in solve_3() ...  ++\n')
-    raise NotImplementedError
+    assembly_problem = AssemblyProblem_3(initial, goal)  # HINT
+    sol_ts = generic_search.breadth_first_graph_search(assembly_problem)
+    if sol_ts is None:
+        return ('no solution')
+    else:
+        return sol_ts.solution()
+
 
 
 # ---------------------------------------------------------------------------
