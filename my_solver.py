@@ -154,9 +154,9 @@ class AssemblyProblem_1(AssemblyProblem):
             state passed as argument.
         
         """
-        valid_moves = [(a, b, c) for a, b in itertools.permutations(state, 2) for c in
+        valid_moves = iter([(a, b, c) for a, b in itertools.permutations(state, 2) for c in
                            range(offset_range(a, b)[0], offset_range(a, b)[1])
-                            if c is not None]
+                            if c is not None])
         return valid_moves
 
     def result(self, state, action):
