@@ -365,7 +365,7 @@ def solve_1(initial, goal):
     if sol_ts is None:
         return ('no solution')
     else:
-        return play_solution(assembly_problem, sol_ts)
+        return sol_ts.solution()
 
 
 # ---------------------------------------------------------------------------
