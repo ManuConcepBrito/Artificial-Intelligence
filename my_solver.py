@@ -154,9 +154,16 @@ class AssemblyProblem_1(AssemblyProblem):
             state passed as argument.
         
         """
-        valid_moves = iter([(a, b, c) for a, b in itertools.permutations(state, 2) for c in
-                           range(offset_range(a, b)[0], offset_range(a, b)[1])
-                            if c is not None])
+        # Check if all elements from state are equal
+        # In case yes use itertools.combinations to avoid repetitions.
+        if state[1:] == state[:-1]:
+            valid_moves = [(a, b, c) for a, b in itertools.combinations(state, 2) for c in
+                            range(offset_range(a, b)[0], offset_range(a, b)[1])
+                            if c is not None]
+        else:
+            valid_moves = [(a, b, c) for a, b in itertools.permutations(state, 2) for c in
+                            range(offset_range(a, b)[0], offset_range(a, b)[1])
+                            if c is not None]
         return valid_moves
     def result(self, state, action):
         """
@@ -220,14 +227,11 @@ class AssemblyProblem_2(AssemblyProblem_1):
         it creates does not appear in the goal state.
         """
 
-<<<<<<< HEAD
-=======
         valid_moves = [(a, b, c) for a, b in itertools.permutations(state, 2) for c in
                        range((offset_range(a, b)[0]), (offset_range(a, b)[1]))
                        if c is not None and
                        appear_as_subpart(TetrisPart(part_under=b,part_above=a,offset=c).get_frozen(),self.goal[0])]
         return valid_moves
->>>>>>> 3f9f16b54b98588d86e98d84bfd594117c3579b2
 
 
 # ---------------------------------------------------------------------------
@@ -267,19 +271,19 @@ class AssemblyProblem_3(AssemblyProblem_1):
         lead to doomed states.
         
         """
-        # Only 90 degrees rotation allowed?
-        valid_moves = []
-        possible_rotations = 1
-        for a, b in itertools.permutations(state, 2):
-            tetris_part = TetrisPart(a)
-            for i in range(0, possible_rotations):
-                tetris_part.rotate90()
-                rotated_part = tetris_part.get_frozen()
-                for c in range(offset_range(rotated_part, b)[0], offset_range(rotated_part, b)[1]):
-                    valid_moves.append((rotated_part, b, c))
+        #Two types of valid moves.
+        magic_num = -47  # Number indicating the action is a rotation
+        # First the drop of one piece into other
+        valid_moves1 = AssemblyProblem_1.actions(self, state)
+        # Rotation of one of the pieces of state
+        valid_moves2 = []
+        for i in range(0, len(state)):
+            tetris_piece = TetrisPart(state[i])
+            tetris_piece.rotate90()
+            piece = tetris_piece.get_frozen()
+            valid_moves2.append((piece, magic_num, magic_num))
+        valid_moves = valid_moves1 + valid_moves2
 
-        # Is this logic? Any other way of creating an iterator
-        valid_moves = iter(valid_moves)
         return valid_moves
 
     def result(self, state, action):
@@ -290,8 +294,21 @@ class AssemblyProblem_3(AssemblyProblem_1):
 
         The action can be a drop or rotation.        
         """
-        # Here a workbench state is a frozenset of parts        
-        return AssemblyProblem_1.result(self, state, action)
+        # Here a workbench state is a frozenset of parts
+        if action[1] == action[2]:
+            piece_rotated = action[0]  # Rotated piece
+            updated_state = []
+            for element in state:
+                    tetris = TetrisPart(element)
+                    tetris.rotate90()
+                    element_rotated = tetris.get_frozen()  #
+                    if element_rotated == piece_rotated:
+                        updated_state.append(element_rotated)
+                    else:
+                        updated_state.append(element)
+            return make_state_canonical(tuple(updated_state))
+        else:
+            return AssemblyProblem_1.result(self, state, action)
 
 
 # ---------------------------------------------------------------------------
