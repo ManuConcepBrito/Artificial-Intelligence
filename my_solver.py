@@ -298,12 +298,14 @@ class AssemblyProblem_3(AssemblyProblem_1):
         if action[1] == action[2]:
             piece_rotated = action[0]  # Rotated piece
             updated_state = []
+            rotated = False
             for element in state:
                     tetris = TetrisPart(element)
                     tetris.rotate90()
                     element_rotated = tetris.get_frozen()  #
-                    if element_rotated == piece_rotated:
+                    if element_rotated == piece_rotated and not rotated:
                         updated_state.append(element_rotated)
+                        rotated = True
                     else:
                         updated_state.append(element)
             return make_state_canonical(tuple(updated_state))
