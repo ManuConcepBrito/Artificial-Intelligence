@@ -260,6 +260,7 @@ class AssemblyProblem_3(AssemblyProblem_1):
         # which itself is derived from 'generic_search.Problem'
         super(AssemblyProblem_3, self).__init__(initial, goal)
         self.use_rotation = True
+        self.magic_num = -47
 
     def actions(self, state):
         """Return the actions that can be executed in the given
@@ -269,19 +270,25 @@ class AssemblyProblem_3(AssemblyProblem_1):
         
         Rotations are allowed, but no filtering out the actions that 
         lead to doomed states.
-        
+
+        The actions that lead to rotation are defined as a tuple of the form:
+        action = (rotated(piece),index(piece),magic_num)
         """
-        #Two types of valid moves.
-        magic_num = -47  # Number indicating the action is a rotation
         # First the drop of one piece into other
         valid_moves1 = AssemblyProblem_1.actions(self, state)
         # Rotation of one of the pieces of state
         valid_moves2 = []
+        # Check if all elements are equal. If all pieces are the same it does not matter which one we rotate
+        are_equal = False
+        if state[1:] == state[:-1]:
+            are_equal = True
         for i in range(0, len(state)):
             tetris_piece = TetrisPart(state[i])
             tetris_piece.rotate90()
             piece = tetris_piece.get_frozen()
-            valid_moves2.append((piece, magic_num, magic_num))
+            valid_moves2.append((piece, i, self.magic_num))
+            if are_equal:
+                break
         valid_moves = valid_moves1 + valid_moves2
 
         return valid_moves
@@ -295,22 +302,15 @@ class AssemblyProblem_3(AssemblyProblem_1):
         The action can be a drop or rotation.        
         """
         # Here a workbench state is a frozenset of parts
-        if action[1] == action[2]:
-            piece_rotated = action[0]  # Rotated piece
-            updated_state = []
-            rotated = False
-            for element in state:
-                    tetris = TetrisPart(element)
-                    tetris.rotate90()
-                    element_rotated = tetris.get_frozen()  #
-                    if element_rotated == piece_rotated and not rotated:
-                        updated_state.append(element_rotated)
-                        rotated = True
-                    else:
-                        updated_state.append(element)
-            return make_state_canonical(tuple(updated_state))
+        assert action in self.actions(state)
+        if self.magic_num in action:
+            rotated_piece = action[0]
+            idx_rot = action[1] # Index of rotated piece
+            updated_state = [state[i] if i != idx_rot else rotated_piece for i in range(0, len(state))]
+            return make_state_canonical(updated_state)
         else:
             return AssemblyProblem_1.result(self, state, action)
+
 
 
 # ---------------------------------------------------------------------------
