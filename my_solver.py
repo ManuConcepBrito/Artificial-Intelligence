@@ -344,15 +344,30 @@ class AssemblyProblem_4(AssemblyProblem_3):
         many actions, consider yielding them one at a time in an
         iterator, rather than building them all at once.
         
-        Filter out actions (drops and rotations) that are doomed to fail 
-        using the function 'cost_rotated_subpart'.
-        A candidate action is eliminated if and only if the new part 
-        it creates does not appear in the goal state.
-        This should  be checked with the function "cost_rotated_subpart()'.
-                
-        """
+        Rotations are allowed, but no filtering out the actions that 
+        lead to doomed states.
 
-        raise NotImplementedError
+        The actions that lead to rotation are defined as a tuple of the form:
+        action = (rotated(piece),index(piece),magic_num)
+        """
+        # First the drop of one piece into other
+        valid_moves1 = AssemblyProblem_2.actions(self, state)
+        # Rotation of one of the pieces of state
+        valid_moves2 = []
+        # Check if all elements are equal. If all pieces are the same it does not matter which one we rotate
+        are_equal = False
+        if state[1:] == state[:-1]:
+            are_equal = True
+        for i in range(0, len(state)):
+            tetris_piece = TetrisPart(state[i])
+            tetris_piece.rotate90()
+            piece = tetris_piece.get_frozen()
+            valid_moves2.append((piece, i, self.magic_num))
+            if are_equal:
+                break
+        valid_moves = valid_moves1 + valid_moves2
+
+        return valid_moves
 
     def h(self, n):
         '''
@@ -372,7 +387,32 @@ class AssemblyProblem_4(AssemblyProblem_3):
           
         '''
 
-        raise NotImplementedError
+        k_n = len(n.state)
+        k_g = len(self.goal)
+        rot_cost = []
+
+        for rotation in n.state:
+            rot_cost.append(cost_rotated_subpart(rotation,self.goal[0]))
+
+        return k_n - k_g + max(rot_cost)
+    
+    def result(self, state, action):
+        """
+        Return the state that results from executing the given
+        action in the given state. The action must be one of
+        self.actions(state).
+
+        The action can be a drop or rotation.        
+        """
+        # Here a workbench state is a frozenset of parts
+        assert action in self.actions(state)
+        if self.magic_num in action:
+            rotated_piece = action[0]
+            idx_rot = action[1] # Index of rotated piece
+            updated_state = [state[i] if i != idx_rot else rotated_piece for i in range(0, len(state))]
+            return make_state_canonical(updated_state)
+        else:
+            return AssemblyProblem_2.result(self, state, action)
 
 
 # ---------------------------------------------------------------------------
@@ -473,7 +513,12 @@ def solve_4(initial, goal):
 
     #         raise NotImplementedError
     print('\n++  busy searching in solve_4() ...  ++\n')
-    raise NotImplementedError
+    assembly_problem = AssemblyProblem_4(initial, goal)  # HINT
+    sol_ts = generic_search.breadth_first_graph_search(assembly_problem)
+    if sol_ts is None:
+        return ('no solution')
+    else:
+        return sol_ts.solution()
 
 
 # ---------------------------------------------------------------------------
