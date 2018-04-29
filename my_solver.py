@@ -260,7 +260,7 @@ class AssemblyProblem_3(AssemblyProblem_1):
         # which itself is derived from 'generic_search.Problem'
         super(AssemblyProblem_3, self).__init__(initial, goal)
         self.use_rotation = True
-        self.magic_num = -47
+        self.magic_num = -47 # Identifier that an action is a rotation
 
     def actions(self, state):
         """Return the actions that can be executed in the given
