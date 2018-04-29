@@ -30,8 +30,8 @@ def print_the_team():
     Print details of the members of your team 
     (full name + student number)
     '''
-
-    raise NotImplementedError
+    print('Manuel Concepcion, 10156208')
+    print('Petr Ungar, ')
 
 
 #    print('Ada Lovelace, 12340001')
