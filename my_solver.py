@@ -30,8 +30,8 @@ def print_the_team():
     Print details of the members of your team 
     (full name + student number)
     '''
-    print('Manuel Concepcion, 10156208')
-    print('Petr Ungar, ')
+    print('Manuel Concepcion, n10156208')
+    print('Petr Ungar, n10144820')
 
 
 #    print('Ada Lovelace, 12340001')
