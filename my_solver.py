@@ -66,14 +66,22 @@ def appear_as_subpart(some_part, goal_part):
     # Step 2: Try to match some_part in goal_part (only looking at the nonzero elements of some_part).
     part = np.array(some_part)  # HINT
     goal = np.array(goal_part)
-    idx = np.where(goal == part[0][0])
-    for i in range(0, idx[0].size):
-        try:
-            goal_subarray = goal[idx[0][i]:part.shape[0] + idx[0][i], idx[1][i]:part.shape[1] + idx[1][i]]
-            if np.array_equal(part[part.nonzero()], goal_subarray[part.nonzero()]):
-                return True
-        except IndexError:
-            pass
+    # Check if the array has just a single element.
+    if part.size == 1:
+        # Check if the element is in goal.
+        if part[0] in goal:
+            return True
+        else:
+            return False
+    else:
+        idx = np.where(goal == part[0][0])
+        for i in range(0, idx[0].size):
+            try:
+                goal_subarray = goal[idx[0][i]:part.shape[0] + idx[0][i], idx[1][i]:part.shape[1] + idx[1][i]]
+                if np.array_equal(part[part.nonzero()], goal_subarray[part.nonzero()]):
+                    return True
+            except IndexError:
+                pass
     return False
 
 
@@ -99,6 +107,13 @@ def cost_rotated_subpart(some_part, goal_part):
     '''
     # Create a TetrisPart to rotate some_part
     some_part_tetris = TetrisPart(some_part)
+    # Check if the array has just a single element.
+    if np.array(some_part).size == 1:
+        # Check if the element is in goal.
+        if some_part[0] in goal_part:
+            return 0
+        else:
+            return np.inf
     # Check the four possible rotations
     possible_rotations = 4
     for rot in range(0, possible_rotations):
@@ -230,7 +245,7 @@ class AssemblyProblem_2(AssemblyProblem_1):
         valid_moves = [(a, b, c) for a, b in itertools.permutations(state, 2) for c in
                        range((offset_range(a, b)[0]), (offset_range(a, b)[1]))
                        if c is not None and
-                       appear_as_subpart(TetrisPart(part_under=b,part_above=a,offset=c).get_frozen(),self.goal[0])]
+                       appear_as_subpart(TetrisPart(part_under=b, part_above=a, offset=c).get_frozen(), self.goal[0])]
         return valid_moves
 
 
@@ -392,7 +407,7 @@ class AssemblyProblem_4(AssemblyProblem_3):
         rot_cost = []
 
         for rotation in n.state:
-            rot_cost.append(cost_rotated_subpart(rotation,self.goal[0]))
+            rot_cost.append(cost_rotated_subpart(rotation, self.goal[0]))
 
         return k_n - k_g + max(rot_cost)
     
