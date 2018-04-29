@@ -514,7 +514,7 @@ def solve_4(initial, goal):
     #         raise NotImplementedError
     print('\n++  busy searching in solve_4() ...  ++\n')
     assembly_problem = AssemblyProblem_4(initial, goal)  # HINT
-    sol_ts = generic_search.breadth_first_graph_search(assembly_problem)
+    sol_ts = generic_search.astar_graph_search(assembly_problem)
     if sol_ts is None:
         return ('no solution')
     else:
