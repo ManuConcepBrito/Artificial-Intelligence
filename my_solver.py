@@ -30,8 +30,8 @@ def print_the_team():
     Print details of the members of your team 
     (full name + student number)
     '''
-
-    raise NotImplementedError
+    print('Manuel Concepcion, 10156208')
+    print('Petr Ungar, ')
 
 
 #    print('Ada Lovelace, 12340001')
@@ -275,7 +275,7 @@ class AssemblyProblem_3(AssemblyProblem_1):
         # which itself is derived from 'generic_search.Problem'
         super(AssemblyProblem_3, self).__init__(initial, goal)
         self.use_rotation = True
-        self.magic_num = -47
+        self.magic_num = -47 # Identifier that an action is a rotation
 
     def actions(self, state):
         """Return the actions that can be executed in the given
@@ -529,7 +529,7 @@ def solve_4(initial, goal):
     #         raise NotImplementedError
     print('\n++  busy searching in solve_4() ...  ++\n')
     assembly_problem = AssemblyProblem_4(initial, goal)  # HINT
-    sol_ts = generic_search.breadth_first_graph_search(assembly_problem)
+    sol_ts = generic_search.astar_graph_search(assembly_problem)
     if sol_ts is None:
         return ('no solution')
     else:
