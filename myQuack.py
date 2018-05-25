@@ -15,6 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn import preprocessing, decomposition
@@ -105,8 +106,9 @@ def build_DT_classifier(X_training, y_training):
     @return
 	clf : the classifier built in this function
     '''
-    ##         "INSERT YOUR CODE HERE"    
-    raise NotImplementedError()
+    clf = DecisionTreeClassifier(random_state=0)
+    clf.fit(X_training, y_training)
+    return clf
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -231,6 +233,8 @@ if __name__ == "__main__":
     X_test = scaler.transform(X_test)
     # Naive Bayes model
     clf_nb = build_NB_classifier(X_training, y_training)
+    # Decision Tree model
+    clf_dt = build_DT_classifier(X_training, y_training)
     # Evaluate hyperparameters
     print('Evaluating hyperparameters...\n')
     print('...Number of neighbors in KNN...\n')
@@ -255,10 +259,10 @@ if __name__ == "__main__":
     acc_nb = test_model(clf_nb, X_test, y_test)
     acc_knn = test_model(clf_nn, X_test, y_test)
     acc_svm = test_model(clf_svm, X_test, y_test)
-    #acc_dt = test_model(clf_dt, X_test, y_test)
+    acc_dt = test_model(clf_dt, X_test, y_test)
     print('Naïve Bayes model achieved: %1.3f %% accuracy in the test set' % acc_nb)
     print('KNN model achieved: %1.3f %% accuracy in the test set' % acc_knn)
     print('SVM model achieved: %1.3f %% accuracy in the test set' % acc_svm)
-    #print('Decission tree achieved: %1.3f % accuracy in the test set' % acc_dt)
+    print('Decission tree achieved: %1.3f % accuracy in the test set' % acc_dt)
 
     plt.show()
