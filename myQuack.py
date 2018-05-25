@@ -30,8 +30,7 @@ def my_team():
     of triplet of the form (student_number, first_name, last_name)
     
     '''
-#    return [ (1234567, 'Ada', 'Lovelace'), (1234568, 'Grace', 'Hopper'), (1234569, 'Eva', 'Tardos') ]
-    raise NotImplementedError()
+    return [ (10144820, 'Petr', 'Ungar'), (1234568, 'Grace', 'Hopper') ]
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -106,9 +105,35 @@ def build_DT_classifier(X_training, y_training):
     @return
 	clf : the classifier built in this function
     '''
-    clf = DecisionTreeClassifier(random_state=0)
+    tuning = tune_DT_classifier(DecisionTreeClassifier(), X_training, y_training)
+    clf = DecisionTreeClassifier(criterion=tuning["criterion"],
+                                 splitter=tuning["splitter"],
+                                 min_samples_split=tuning["min_samples_split"])
     clf.fit(X_training, y_training)
     return clf
+
+def tune_DT_classifier(builder, X_train, y_train):
+    '''  
+    Find best params for a Decision Tree classifier based on the training set X_training, y_training.
+    @param 
+	X_training: X_training[i,:] is the ith example
+	y_training: y_training[i] is the class label of X_training[i,:]
+    @return
+	best params for decision tree (dictionary)
+    '''
+    params = {"criterion":["gini","entropy"],
+              "splitter":["best","random"],
+              "min_samples_split": [a for a in range(20,1,-1)]}
+    
+    tree_cross_validation = RandomizedSearchCV(builder,params,cv=5)
+    
+    tree_cross_validation.fit(X_train, y_train)
+        
+    print("\n=========================Best params for DT:============================\n|",
+          tree_cross_validation.best_params_,
+          "|\n========================================================================")
+    
+    return tree_cross_validation.best_params_
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -233,8 +258,6 @@ if __name__ == "__main__":
     X_test = scaler.transform(X_test)
     # Naive Bayes model
     clf_nb = build_NB_classifier(X_training, y_training)
-    # Decision Tree model
-    clf_dt = build_DT_classifier(X_training, y_training)
     # Evaluate hyperparameters
     print('Evaluating hyperparameters...\n')
     print('...Number of neighbors in KNN...\n')
@@ -252,6 +275,7 @@ if __name__ == "__main__":
     clf_svm, best_C_value, acc_per_C = cross_validate_model(build_SVM_classifier, X_training,y_training, C_list)
     print('C value\t Accuracy\n', '\n'.join([' %1.3f\t\t%f %%' % item for item in zip(C_list, acc_per_C)]))
     # Hyperparameter for decision tree
+    clf_dt = build_DT_classifier(X_training, y_training)
 
     print('\nTest stage\n')
     print('...Processing...\n')
