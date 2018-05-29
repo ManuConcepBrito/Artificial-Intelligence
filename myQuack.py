@@ -259,7 +259,7 @@ if __name__ == "__main__":
     path = "C:/Users/BWH\Desktop/Clase/Australia/Artificial Intelligence/Machine learning/medical_records.data"
     X, y = prepare_dataset(dataset_path=path)
     # SHUFFLE THE DATA
-    X_training, X_test, y_training, y_test = train_test_split(X, y, test_size=0.25)
+    X_training, X_test, y_training, y_test = train_test_split(X, y, test_size=0.25, shuffle=True)
     # Compute the mean and std for the training data. Apply to both training and test.
     scaler = preprocessing.StandardScaler().fit(X_training)
     X_training = scaler.transform(X_training)
@@ -272,7 +272,7 @@ if __name__ == "__main__":
     neighbors = [1, 2, 3, 10, 50, 100, 150, 200, 250, 300]
     clf_nn, best_neighbor, acc_per_neighbor = cross_validate_model(build_NN_classifier, X_training, y_training,
                                                                    neighbors)
-    plt.bar(neighbors, acc_per_neighbor)
+    plt.plot(neighbors, acc_per_neighbor)
     plt.title('Accuracy per Neighbor', fontsize=20)
     plt.xlabel('Neighbors', fontsize=20)
     plt.ylabel('Accuracy', fontsize=20)
@@ -280,9 +280,15 @@ if __name__ == "__main__":
     print('\n Best Neighbor is: %d' % best_neighbor)
     # C penalty value
     print('\n...C penalty value in SVM...\n')
-    C_list = [0.001, 0.01, 0.1, 1, 10, 100]
+    C_list = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
     clf_svm, best_C_value, acc_per_C = cross_validate_model(build_SVM_classifier, X_training, y_training, C_list)
+    plt.figure()
+    plt.semilogx(C_list, acc_per_C)
+    plt.title('Accuracy per C-value', fontsize=20)
+    plt.xlabel('C-value', fontsize=20)
+    plt.ylabel('Accuracy', fontsize=20)
     print('C value\t Accuracy\n', '\n'.join([' %1.3f\t\t%f %%' % item for item in zip(C_list, acc_per_C)]))
+    print('\n Best C-value is: %d' % best_C_value)
     # Hyperparameter for decision tree
     clf_dt = build_DT_classifier(X_training, y_training)
 
