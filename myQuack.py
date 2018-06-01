@@ -98,46 +98,43 @@ def build_NB_classifier(X_training, y_training):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-def build_DT_classifier(X_training, y_training):
-    '''
+def build_DT_classifier(X_training, y_training, min_samples=1):
+    '''  
     Build a Decision Tree classifier based on the training set X_training, y_training.
-
-    @param
+    @param 
 	X_training: X_training[i,:] is the ith example
 	y_training: y_training[i] is the class label of X_training[i,:]
-
     @return
 	clf : the classifier built in this function
     '''
-    tuning = tune_DT_classifier(DecisionTreeClassifier(), X_training, y_training)
-    clf = DecisionTreeClassifier(criterion=tuning["criterion"],
-                                 splitter=tuning["splitter"],
-                                 min_samples_split=tuning["min_samples_split"])
+    #tuning = tune_DT_classifier(DecisionTreeClassifier(), X_training, y_training)   #tuning more than one hyperpar improve accuracy
+    clf = DecisionTreeClassifier(min_samples_leaf=min_samples)                      #tuning just one hyperparam
     clf.fit(X_training, y_training)
     return clf
 
 
+#---------------------function to tune more hyperparms of the decision tree for more accuracy-----------------
 def tune_DT_classifier(builder, X_train, y_train):
-    '''
+    '''  
     Find best params for a Decision Tree classifier based on the training set X_training, y_training.
-    @param
+    @param 
 	X_training: X_training[i,:] is the ith example
 	y_training: y_training[i] is the class label of X_training[i,:]
     @return
-	best params for decision tree (dictionary)
+	best params for decision tree
     '''
-    params = {"criterion": ["gini", "entropy"],
-              "splitter": ["best", "random"],
-              "min_samples_split": [a for a in range(20, 1, -1)]}
-
-    tree_cross_validation = RandomizedSearchCV(builder, params, cv=5)
-
+    params = {"criterion":["gini","entropy"],
+              "splitter":["best","random"],
+              "min_samples_split": [a for a in range(2,21,1)]}
+    
+    tree_cross_validation = RandomizedSearchCV(builder,params,cv=5)
+    
     tree_cross_validation.fit(X_train, y_train)
-
+        
     print("\n=========================Best params for DT:============================\n|",
           tree_cross_validation.best_params_,
           "|\n========================================================================")
-
+    
     return tree_cross_validation.best_params_
 
 
@@ -290,7 +287,11 @@ if __name__ == "__main__":
     print('C value\t Accuracy\n', '\n'.join([' %1.3f\t\t%f %%' % item for item in zip(C_list, acc_per_C)]))
     print('\n Best C-value is: %d' % best_C_value)
     # Hyperparameter for decision tree
-    clf_dt = build_DT_classifier(X_training, y_training)
+    # Hyperparameter for decision tree
+    min_sample_list = list(np.arange(300) + 1)
+    clf_dt, best_hyper, acc_per_hyper = cross_validate_model(build_DT_classifier, X_training,y_training, min_sample_list)
+    print('Min_samples value\t Accuracy\n', '\n'.join([' %1.3f\t\t%f %%' % item for item in zip(min_sample_list, acc_per_hyper)]))
+    print("Best min_samples_leaf value is:", best_hyper)
 
     print('\nTest stage\n')
     print('...Processing...\n')
